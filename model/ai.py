@@ -24,12 +24,8 @@ class ai:
             df.at[i,"title"] = stopword.remove(html_pattern.sub(r'',df.loc[i,'title'].lower()))
         vectorizer = TfidfVectorizer()
         tfidf_matrix = vectorizer.fit_transform(df['desc'])
-        feature_names = vectorizer.get_feature_names_out()
-        df_tfidf = pd.DataFrame(tfidf_matrix.toarray(), columns=feature_names)
         
-
-        new_document = keyword
-        new_tfidf_vector = vectorizer.transform([new_document])
+        new_tfidf_vector = vectorizer.transform([keyword])
 
         similarity_scores = cosine_similarity(new_tfidf_vector, tfidf_matrix)
         return similarity_scores
