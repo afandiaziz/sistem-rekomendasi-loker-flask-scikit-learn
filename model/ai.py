@@ -32,9 +32,7 @@ class ai:
         new_tfidf_vector = vectorizer.transform([new_document])
 
         similarity_scores = cosine_similarity(new_tfidf_vector, tfidf_matrix)
-
-        document_indices = similarity_scores[0].argsort()[::-1]
-        return document_indices
+        return similarity_scores
         
 
         

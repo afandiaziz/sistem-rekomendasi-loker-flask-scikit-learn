@@ -18,7 +18,9 @@ mysql = MySQL(app)
 def foo(keyword):
     cur = mysql.connection.cursor()
     # tambahin parameter
-    cur.execute("select * from vacancies")
+    query = request.args.get("customquery", "select * from vacancies", type=str)
+    minWeight = request.args.get("min", 0, type=float)
+    cur.execute(query)
     job = cur.fetchall()
     allJob = []
     for data in job:
@@ -27,16 +29,29 @@ def foo(keyword):
         temp.append( data[2])
         temp.append( data[3])
         allJob.append(temp)
-    sortedJob = ai.search(allJob,keyword)
+    jobWeight = ai.search(allJob,keyword)
+    sortedJob = jobWeight[0].argsort()[::-1]
+    # eliminate minimum weight
+    x =0
+    for val in sortedJob:
+        print(jobWeight[0][x])
+        if(jobWeight[0][val] < minWeight):
+            print("ini x")
+            print(jobWeight[0][val])
+            print(x)
+            sortedJob = sortedJob[0:x]
+            break
+        x = x+1
+    print(sortedJob)
     itemPerPage = 5
     pages = math.ceil(len(sortedJob)/itemPerPage)
     page = request.args.get("page", 0, type=int)
-    print((page-1)*itemPerPage)
-    print(pages)
     data = []
-    for x in sortedJob[0 if page == 0 else (page-1)*itemPerPage:-1 if page == 0 else -1 if page >= pages else page*itemPerPage]:
-        data.append(allJob[x][0])
-        print(x)
+    for x in sortedJob[0 if page == 0 else (page-1)*itemPerPage:len(sortedJob) if page == 0 else len(sortedJob) if page >= pages else page*itemPerPage]:
+        temp = {}
+        temp["id"] = allJob[x][0]
+        temp["score"] = jobWeight[0][x]
+        data.append(temp)
 
     res = {"pages":pages,"data":data}
     return jsonify(res)
